@@ -3,3 +3,5 @@ main.ipynb
 .DS_Store
 /Users/mr_ursu/mrursu_code/.vscode
 config.py
+data
+test.py
