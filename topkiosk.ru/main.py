@@ -5,9 +5,30 @@ import json
 import time
 import random
 import datetime
-import os 
+import os
+import psycopg2
+from config import host, user, password, db_name
+from dbconnect import connect
+from psycopg2.extras import execute_batch
 
 
+# Insert data in Databases
+def insert_data(lst): 
+    """ Insert data in Database"""
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        query = """INSERT INTO user_info(card,age) VALUES (%(product_name)s, %(product_href)s)"""
+        execute_batch(cursor, query,lst)
+        conn.commit()
+        print("[INFO] Data was succefully inserted")
+    except Exception as _ex:
+        print("[INFO] Error while working with PostgreSQL", _ex)
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+            print("[INFO] PostgreSQL connection closed")
 
 
 # download img in the folders
@@ -24,7 +45,6 @@ def img_downloaders(lst):
         time.sleep(random.randrange(2, 5))
         img_counter += 1
    
-    
 # parsring data
 def get_data():
     print('\n' +'PARSING TOPKIOSK.RU'.center(60,'-') + '\n')
@@ -48,8 +68,11 @@ def get_data():
             'product_name': product_name,
             'product_href': products_href
         })
+        
+    insert_data(lst)
     with open('topkiosk.ru/data_list.json', 'w') as file:
         json.dump(lst, file, indent=4,ensure_ascii= False)
+        
     step = 0
     lenlst = len(lst) // 3
     os.chdir('topkiosk.ru/data')
@@ -58,11 +81,14 @@ def get_data():
             os.mkdir(str(count))  
         os.chdir(str(count))
         listslice = lst[step:step+3]
+        
         img_downloaders(listslice)
+        
         os.chdir('..')
         step+= 3
         count+= 1
         print('-' * 60)
+  
 
 
 def main():
@@ -74,4 +100,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
     
